@@ -1,0 +1,128 @@
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  font-family: sans-serif;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+
+  background: url('../images/bg.jpg') no-repeat center center fixed;
+  background-size: cover;
+  background-color: #111; /* fallback */
+  animation: zoomBg 20s infinite alternate ease-in-out;
+}
+
+
+
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5); /* dark overlay */
+  z-index: 0;
+}
+
+
+.container {
+  background-color: rgba(30, 30, 30, 0);
+  padding: 60px 40px; /* more padding makes it look taller */
+  border-radius: 16px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0);
+  width: 100%;
+  max-width: 400px;
+  min-height: 500px; /* makes the container vertically longer */
+  z-index: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.8s ease-out;
+}
+
+
+.sign-in-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.sign-in-form input {
+  padding: 18px;
+  font-size: 16px;
+  border-radius: 10px;
+}
+
+.sign-in-form input,
+.sign-in-form button
+{
+  padding: 16px; /* was 12px */
+  font-size: 16px; /* makes the text inside larger */
+  border: none;
+  border-radius: 10px;
+  background-color: #1010107a;
+  color: rgb(239, 232, 232);
+}
+
+
+.sign-in-form h2 {
+  font-size: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.sign-in-form p {
+  text-align: center;
+  font-size: 18px;
+  color: #e1fff9;
+  margin-bottom: 16px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+.sign-in-form input:focus {
+  outline: none;
+  box-shadow: 0 0 10px #20324800;
+  background-color: #423939;
+  transition: box-shadow 0.3s, background-color 0.3s;
+}
+
+.sign-in-form button {
+  transition: all 0.3s ease;
+}
+
+.sign-in-form button:hover {
+  transform: scale(1.05);
+  background-color: #005fcc;
+}
+
+@keyframes zoomBg {
+  from {
+    background-size: 150%;
+  }
+  to {
+    background-size: 200%;
+  }
+}
+
+.logo {
+  width: 90px; /* adjust size if needed */
+  margin: 0 auto 20px auto;
+  display: block;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+}

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Journal</title>
+  <link rel="stylesheet" href="css/journal.css">
+</head>
+<body>
+  <div class="page">
+    <div class="top-buttons">
+      <button class="logout-btn" onclick="logout()">
+        <img src="logout-icon.png" class="logout-icon" alt="Logout" /> Logout
+      </button>
+    </div>
+
+    <h1>My Journal</h1>
+
+    <div class="container">
+      <!-- Left Column: Entry Form -->
+      <div class="left-column">
+        <select id="moodSelect">
+          <option value="">Select Mood</option>
+          <option value="Happy">😊 Happy</option>
+          <option value="Sad">😢 Sad</option>
+          <option value="Overwhelmed">😵 Overwhelmed</option>
+          <option value="Excited">🤩 Excited</option>
+          <option value="Calm">😌 Calm</option>
+        </select>
+        <textarea id="entryInput" placeholder="Write your entry..."></textarea>
+        <button onclick="saveEntry()">Save Entry</button>
+        <button class="draft-btn" onclick="saveDraft()">Save as Draft</button>
+      </div>
+
+      <!-- Right Column: Entry & Draft List -->
+      <div class="right-column">
+        <h2>Saved Entries</h2>
+        <div class="entry-list" id="entryList"></div>
+
+        <h2>Drafts</h2>
+        <div class="entry-list" id="draftList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const currentUser = localStorage.getItem('loggedInUser');
+    if (!currentUser) {
+      window.location.href = 'index.html';
+    }
+
+    function getUserKey(type) {
+      return `${type}_${currentUser}`;
+    }
+
+    let editingIndex = null;
+
+    function saveEntry() {
+      const input = document.getElementById('entryInput').value.trim();
+      const mood = document.getElementById('moodSelect').value;
+
+      if (input === '') {
+        alert("You can't save an empty entry.");
+        return;
+      }
+
+      let entries = JSON.parse(localStorage.getItem(getUserKey('entries'))) || [];
+
+      if (editingIndex !== null) {
+        entries[editingIndex].content = input;
+        entries[editingIndex].timestamp = new Date().toLocaleString();
+        entries[editingIndex].mood = mood;
+        editingIndex = null;
+      } else {
+        const entry = {
+          content: input,
+          timestamp: new Date().toLocaleString(),
+          mood: mood
+        };
+        entries.unshift(entry);
+      }
+
+      localStorage.setItem(getUserKey('entries'), JSON.stringify(entries));
+      clearInput();
+      displayEntries();
+    }
+
+    function saveDraft() {
+      const input = document.getElementById('entryInput').value.trim();
+      const mood = document.getElementById('moodSelect').value;
+
+      if (input === '') {
+        alert("You can't save an empty draft.");
+        return;
+      }
+
+      let drafts = JSON.parse(localStorage.getItem(getUserKey('drafts'))) || [];
+
+      const draft = {
+        content: input,
+        timestamp: new Date().toLocaleString(),
+        mood: mood
+      };
+
+      drafts.unshift(draft);
+      localStorage.setItem(getUserKey('drafts'), JSON.stringify(drafts));
+      alert('Draft saved!');
+      clearInput();
+      displayDrafts();
+    }
+
+    function deleteEntry(index) {
+      let entries = JSON.parse(localStorage.getItem(getUserKey('entries'))) || [];
+      entries.splice(index, 1);
+      localStorage.setItem(getUserKey('entries'), JSON.stringify(entries));
+      displayEntries();
+    }
+
+    function deleteDraft(index) {
+      let drafts = JSON.parse(localStorage.getItem(getUserKey('drafts'))) || [];
+      drafts.splice(index, 1);
+      localStorage.setItem(getUserKey('drafts'), JSON.stringify(drafts));
+      displayDrafts();
+    }
+
+    function editEntry(index) {
+      const entries = JSON.parse(localStorage.getItem(getUserKey('entries'))) || [];
+      document.getElementById('entryInput').value = entries[index].content;
+      document.getElementById('moodSelect').value = entries[index].mood || '';
+      editingIndex = index;
+      document.querySelector('button[onclick="saveEntry()"]').textContent = 'Update Entry';
+    }
+
+    function useDraft(index) {
+      const drafts = JSON.parse(localStorage.getItem(getUserKey('drafts'))) || [];
+      document.getElementById('entryInput').value = drafts[index].content;
+      document.getElementById('moodSelect').value = drafts[index].mood || '';
+      deleteDraft(index);
+    }
+
+    function displayEntries() {
+      const entries = JSON.parse(localStorage.getItem(getUserKey('entries'))) || [];
+      const entryList = document.getElementById('entryList');
+      entryList.innerHTML = '';
+
+      entries.forEach((entry, index) => {
+        const entryDiv = document.createElement('div');
+        entryDiv.className = 'entry';
+        entryDiv.innerHTML = `
+          <div class="timestamp">${entry.timestamp}</div>
+          <div class="mood ${entry.mood}">${entry.mood}</div>
+          <div class="content">${entry.content}</div>
+          <div class="entry-actions">
+            <button class="edit-btn" onclick="editEntry(${index})">Edit</button>
+            <button class="delete-btn" onclick="deleteEntry(${index})">Delete</button>
+          </div>
+        `;
+        entryList.appendChild(entryDiv);
+      });
+
+      if (editingIndex === null) {
+        document.querySelector('button[onclick="saveEntry()"]').textContent = 'Save Entry';
+      }
+    }
+
+    function displayDrafts() {
+      const drafts = JSON.parse(localStorage.getItem(getUserKey('drafts'))) || [];
+      const draftList = document.getElementById('draftList');
+      draftList.innerHTML = '';
+
+      drafts.forEach((draft, index) => {
+        const draftDiv = document.createElement('div');
+        draftDiv.className = 'entry draft';
+        draftDiv.innerHTML = `
+          <div class="timestamp">${draft.timestamp}</div>
+          <div class="mood ${draft.mood}">${draft.mood}</div>
+          <div class="content">${draft.content}</div>
+          <div class="entry-actions">
+            <button class="edit-btn" onclick="useDraft(${index})">Use Draft</button>
+            <button class="delete-btn" onclick="deleteDraft(${index})">Delete</button>
+          </div>
+        `;
+        draftList.appendChild(draftDiv);
+      });
+    }
+
+    function clearInput() {
+      document.getElementById('entryInput').value = '';
+      document.getElementById('moodSelect').value = '';
+    }
+
+    function logout() {
+      if (confirm("Are you sure you want to logout?")) {
+        localStorage.removeItem('loggedInUser');
+        alert('You have been logged out!');
+        window.location.href = 'index.html';
+      }
+    }
+
+    window.onload = function () {
+      displayEntries();
+      displayDrafts();
+    };
+  </script>
+</body>
+</html>
